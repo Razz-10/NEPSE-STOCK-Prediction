@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% include "nav.html" %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <h2>Live Trading</h2>
+                        <tr>
+                            <!-- {% for header in table_data.headers %}
+                                <th>{{ header }}</th>
+                            {% endfor %} -->
+                            <th>INDEX</th>
+                            <th> SYMBOL</th>
+                            <th> LTP</th>
+                            <th> CHANGE</th>
+                            <th> HIGH</th>
+                            <th> LOW</th>
+                            <th> OPEN</th>
+                            <th> PREV. CLOSE</th>
+                            <th> </th>
+                            <th> </th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in table_data.data %}
+                            <tr style="
+                                {% if row.row_class == 'increase-row' %}
+                                    background-color: #ccffcc; /* Light green for increase */
+                                {% elif row.row_class == 'decrease-row' %}
+                                    background-color: #ffcccc; /* Light red for decrease */
+                                {% elif row.row_class == 'nochange-row' %}
+                                    background-color: #f0f0f0; /* Light grey for no change */
+                                {% endif %}
+                            ">
+                                {% for key, value in row.items() %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'nav.html' %}
+    <div class="row">
+        {% for news in context.news_list %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ news.image_url }}" class="card-img-top" alt="{{ news.title }}">
+
+                
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="{{ "https://merolagani.com" ~ news.link }}">{{ news.title }}</a></h5>
+
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

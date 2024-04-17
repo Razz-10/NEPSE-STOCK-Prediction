@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{%block content%}
+{%include 'nav.html'%}
+<h1 class="text-success mt-5 text-center">Nepse Stock Prediction</h1>
+    
+<!-- Form to input stock symbol -->
+    <form method="post"class="m-4 border border-success p-5 rounded" action="{{ url_for('predict') }}">
+        <div class="form-group">
+            <label for="stock_symbol">Select Stock Symbol:</label><br>
+        <!-- <select class="form-control form-control-lg w-50" id="stock_symbol" name="stock_symbol">
+            <option value="PRVU">PRVU</option>
+            <option value="GBIME">GBIME</option>
+            <option value="NHPC">NHPC</option>
+            <option value="NHPC">NICA</option>
+            <option value="AHPC">AHPC</option>
+            <option value="API">API</option>
+            <option value="KBL">KBL</option>
+            
+
+            
+
+            
+        </select> -->
+        <select class="form-control form-control-lg w-50" id="stock_symbol" name="stock_symbol">
+            <option value="PRVU" {% if symbol == 'PRVU' %} selected {% endif %}>PRVU</option>
+            <option value="GBIME" {% if symbol == 'GBIME' %} selected {% endif %}>GBIME</option>
+            <option value="NHPC" {% if symbol == 'NHPC' %} selected {% endif %}>NHPC</option>
+            <option value="NICA" {% if symbol == 'NICA' %} selected {% endif %}>NICA</option>
+            <option value="AHPC" {% if symbol == 'AHPC' %} selected {% endif %}>AHPC</option>
+            <option value="API" {% if symbol == 'API' %} selected {% endif %}>API</option>
+            <option value="KBL" {% if symbol == 'KBL' %} selected {% endif %}>KBL</option>
+        </select>
+        
+        </div>
+        
+        <br>
+        <button class="btn btn-success p-2 w-25" type="submit">Predict</button>
+    </form>
+    <body>
+        {% if request.method == 'POST' %}
+
+        <h1 class="text-success mt-5 text-center">Our predictions for company {{ symbol}}</h1>
+        <br>
+        
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <table class="table table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Prediction Day</th>
+                                <th>Opening Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in predicted_prices%}
+                                <tr>
+                                    <td>Day {{ loop.index }}</td>
+                                    <td>{{ item }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="canv" style="margin: 100px 100px">
+
+            <h2 class="text-success mt-5 text-center">Actual Test and Predction of  {{ symbol }} stock </h2>
+            <!-- <h2 class="text-success mt-5 text-center">Training and Testing  of  {{ symbol }} stock </h2> -->
+
+            <canvas id ="myChart1"width="900" height="400" style="  border:1px solid purple; "></canvas> 
+            <br>
+            <hr>
+            
+            <br>
+            <h2 class="text-success mt-5 text-center">Latest 80 days Opening and Our 10 days Prediction of  {{ symbol }} stock </h2>
+            <canvas id ="myChart2"width="800" height="400"style="border:1px solid #964B00;"></canvas>
+            <h2 class="text-success mt-5 text-center">Opening 10 Days Prediction of {{ symbol }} stock </h2>
+            <canvas id ="myChart3"width="800" height="400" style="border:1px solid green;"></canvas>
+        </div>
+
+
+        
+<script>
+
+
+
+var ctx1 = document.getElementById('myChart1').getContext('2d');
+  
+
+  var jsonData = JSON.parse('{{ datas | safe }}');
+  var train_dates = jsonData.train_dates || [];
+  var y_train_original = jsonData.y_train_original || [];
+  var train_predictions = jsonData.train_predictions || [];
+  var test_dates = jsonData.test_dates || [];
+  var y_test_original = jsonData.y_test_original || [];
+  var predictions = jsonData.predictions || [];
+  var stock =jsonData.stock;
+  
+
+  var chartData1 = {
+      labels: test_dates,
+      datasets: [
+        {
+          label: 'Actual testdata',
+          data: y_test_original,
+          borderColor: 'green',
+          borderWidth: 1,
+          fill: false,
+          pointRadius: 0 
+      }, {
+          label: 'Test Prediction',
+          data:predictions,
+          borderColor: 'red',
+          borderWidth: 1,
+          fill: false,
+          pointRadius: 0 
+      }]
+  };
+
+  var myChart1 = new Chart(ctx1, {
+      type: 'line',
+      data: chartData1,
+      options: {
+          title: {
+            display: true,
+            text: 'Train And test Data'
+        },
+
+          scales: {
+              xAxes: [{
+                  scaleLabel: {
+                      display: true,
+                      labelString: 'X-axis'
+                  }
+              }],
+              yAxes: [{
+                  scaleLabel: {
+                      display: true,
+                      labelString: 'Y-axis'
+                  }
+              }]
+          }
+      }
+  });
+
+
+
+// var chartData1 = {
+//       labels: train_dates.concat(test_dates),
+//       datasets: [{
+//           label: 'Actual train',
+//           data: y_train_original.concat(new Array(test_dates.length).fill(null)),
+//           borderColor: 'blue',
+//           borderWidth: 1,
+//           fill: false,
+//           pointRadius: 0 
+//       }, {
+//           label: 'Train Prediction',
+//           data: train_predictions.concat(new Array(test_dates.length).fill(null)),
+//           borderColor: 'orange',
+//           borderWidth: 1,
+//           fill: false,
+//           pointRadius: 0 
+//       }, {
+//           label: 'Actual testdata',
+//           data: new Array(train_dates.length).fill(null).concat(y_test_original),
+//           borderColor: 'green',
+//           borderWidth: 1,
+//           fill: false,
+//           pointRadius: 0 
+//       }, {
+//           label: 'Test Prediction',
+//           data: new Array(train_dates.length).fill(null).concat(predictions),
+//           borderColor: 'red',
+//           borderWidth: 1,
+//           fill: false,
+//           pointRadius: 0 
+//       }]
+//   };
+
+//   var myChart1 = new Chart(ctx1, {
+//       type: 'line',
+//       data: chartData1,
+//       options: {
+//           title: {
+//             display: true,
+//             text: 'Train And test Data'
+//         },
+
+//           scales: {
+//               xAxes: [{
+//                   scaleLabel: {
+//                       display: true,
+//                       labelString: 'X-axis'
+//                   }
+//               }],
+//               yAxes: [{
+//                   scaleLabel: {
+//                       display: true,
+//                       labelString: 'Y-axis'
+//                   }
+//               }]
+//           }
+//       }
+//   });
+
+
+ var ctx2 = document.getElementById('myChart2').getContext('2d');
+
+    var jsonData = JSON.parse('{{ datas | safe }}');
+    // console.log(jsonData);
+    // var latest_dates = jsonData.latest_date;
+    var latest_data = jsonData.latest_data;
+    var latest_dates = jsonData.latest_date || [];
+    var x_labels = jsonData.x_labels;
+    var predicted_prices = jsonData.predicted_pricess;
+    var new_dates= jsonData.new_dates;
+    var merged_dates=jsonData.merged_dates;
+
+    var chartData2 = {
+        labels: latest_dates.concat(new_dates),
+        // labels: merged_dates,
+        datasets: [{
+            label: 'Opening Price',
+            // data: latest_data,
+            data: latest_data.concat(new Array(10).fill(null)),
+            
+            borderColor: 'blue',
+            borderWidth: 1,
+            fill: false,
+            // pointRadius: 0 
+        }, {
+            label: 'Predicted Prices',
+            data: new Array(latest_dates.length).fill(null).concat(predicted_prices),
+            // data:predicted_prices,
+            
+            borderColor: 'orange',
+            borderWidth: 1,
+            fill: false,
+            // pointRadius: 0 
+        }]
+    };
+
+    var myChart2 = new Chart(ctx2, {
+        type: 'line',
+        data: chartData2,
+        options: {
+            title: {
+            display: true,
+            text: 'Latest 200 Days and Predicted Price'
+        },
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Open Price'
+                    }
+                }]
+            }
+        }
+    });
+
+            var x_labels = jsonData.x_labels;
+            var predicted_prices = jsonData.predicted_pricess;
+            var latest_data =jsonData.latest_data;
+            var latest_date =jsonData.latest_date;
+            var ctx3 = document.getElementById('myChart3').getContext('2d');
+            var myChart3 = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels:  x_labels, // Use custom labels for the x-axis
+                    datasets: [{
+                        label: 'Predicted Prices',
+                        data:  predicted_prices, // Use predicted prices for the y-axis
+                        borderColor: 'red',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    title: {
+                    display: true,
+                     text: 'Next 10 Days Prediction.'
+                   },
+                    scales: {
+                        xAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'X Label' // Add a label for the x-axis
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Predicted Price' // Add a label for the y-axis
+                            }
+                        }]
+                    }
+                }
+            });
+
+
+</script>
+
+     
+
+    {% endif %} 
+      
+    </body>
+
+    
+    
+
+
+
+{% endblock %}
